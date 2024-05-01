@@ -17,6 +17,67 @@ async function getUsers(request, response, next) {
   }
 }
 
+
+/**
+ * paginitation
+* @param {object} request - Express request object
+* @param {object} response - Express response object
+* @param {object} next - Express route middlewares
+* @returns {object} Response object or pass an error to the next route
+*/
+async function getUsers(request, response, next) {
+  try{
+    const page =  parseInt(request.query.page) || 1;
+    const pageSize = parseInt(request.query.pageSize) || 5;
+    const sortField = request.query.sortField || null;
+    const sortOrder = request.query.sortOrder || 'asc';
+    let users = await usersService.getUsers();
+
+    if (sortField && (sortOrder === 'asc' || sortOrder === 'desc')) {
+      users.sort((a,b) => {
+        if (a[sortField] < b[sortField]) return sortOrder === 'asc' ? -1 : 1;
+        if (a[sortField] > b[sortField]) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    const searchingQuery = request.query.search;
+    if (searchingQuery) {
+      const [searchField, searchKey] = searchQuery.split(':')
+      if(searchField === 'email' || searchField === 'name') {
+        users = users.filter((user)=>
+      user[searchField].toLowerCase().includes(searchKey.toLowerCase())
+    );
+  }
+}
+
+const totalItems = users.length;
+const totalPages = Math.ceil(totalItems / pageSize);
+
+const results = users.slice(
+  (page - 1) * pageSize,
+  page * pageSize
+);
+
+const hasNextPage = page < totalPages;
+const hasPreviousPage = page > 1;
+
+response.status(200).json({
+  page_number: parseInt(page),
+  page_size: parseInt(pageSize),
+  count: parseInt(totalItems),
+  total_pages: parseInt(totalPages),
+  has_previous_page: parseInt(hasPreviousPage),
+  has_next_page: parseInt(hasNextPage),
+  Data: results,
+  });
+    } catch (error) {
+  next(error);
+  }
+}
+
+
+
 /**
  * Handle get user detail request
  * @param {object} request - Express request object
