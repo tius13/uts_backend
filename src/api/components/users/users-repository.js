@@ -17,6 +17,17 @@ async function getUser(id) {
   return User.findById(id);
 }
 
+/*paginitation*/
+async function getUsers() {
+  try {
+    const users = await User.find({});
+    return users;
+  } catch (error) {
+    throw error;
+  }
+}
+
+
 /**
  * Create new user
  * @param {string} name - Name

@@ -76,8 +76,6 @@ response.status(200).json({
   }
 }
 
-
-
 /**
  * Handle get user detail request
  * @param {object} request - Express request object
